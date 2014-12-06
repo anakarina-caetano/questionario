@@ -23,11 +23,14 @@ shinyServer(function(input, output, session) {
   })
     
   salva <- reactive({
-    con <- dbConnect("MySQL", host=host, dbname=dbname, username=username, password=password)
-    tabela_atual <- dbReadTable(con, 'questionario')
-    d <- dados()
-    res <- dbWriteTable(con, 'questionario', d, append=T, row.names=F, overwrite=F)
-    dbDisconnect(con)
+    res <- FALSE
+    try({
+      con <- dbConnect("MySQL", host=host, dbname=dbname, username=username, password=password)
+      tabela_atual <- dbReadTable(con, 'questionario')
+      d <- dados()
+      res <- dbWriteTable(con, 'questionario', d, append=T, row.names=F, overwrite=F)
+      dbDisconnect(con)
+    })
     return(res)
   })
   
@@ -41,12 +44,12 @@ shinyServer(function(input, output, session) {
         res <- salva()
       }
       
-      if(aux > 0 & val) {
+      if(aux > 0 & val & res) {
         showshinyalert(session,'salvou', 'Salvou!!', 'success')
       } else if (aux == 0) {
         showshinyalert(session, 'salvou', 'Clique em salvar!', 'warning')
       } else if (!val) {
-        showshinyalert(session,'salvou', 'Tem coisa errada :(', 'danger')
+        showshinyalert(session,'salvou', 'Existem campos preenchidos de forma errada :(', 'danger')
       } else if(!res) {
         showshinyalert(session,'salvou', 'Ocorreu um erro na base de dados :(', 'danger')
       }
