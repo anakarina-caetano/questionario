@@ -5,8 +5,6 @@ library(stringr)
 library(lubridate)
 library(RMySQL)
 
-
-
 shinyServer(function(input, output, session) {
   
   valida <- reactive({
@@ -15,7 +13,8 @@ shinyServer(function(input, output, session) {
   })
   
   dados <- reactive({
-    d <- data.frame(nome=input$nome,
+    d <- data.frame(datetime=now(),
+               nome=input$nome,
                email=input$email,
                genero=input$genero,
                fale=input$fale)
