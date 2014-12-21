@@ -8,16 +8,39 @@ library(RMySQL)
 shinyServer(function(input, output, session) {  
   
   valida <- reactive({
-    val <- str_length(input$email) > 0 & str_detect(input$email, fixed('@'))
-    return(val)
+    if(!is.null(input$q1a) & !is.null(input$q2a) & !is.null(input$q3a) & !is.null(input$q3c)) {
+      val <- str_length(input$email) > 0 & 
+        str_detect(input$email, fixed('@')) &
+        input$q1a %in% c('sim', 'nao') &
+        input$q2a %in% c('sim', 'nao') &
+        length(input$q3a) > 0 & 
+        input$q3c %in% c('sim', 'nao')
+      
+      return(val)
+    } else {
+      return(0)
+    }
   })
   
   dados <- reactive({
-    d <- data.frame(datetime=now(),
+    d <- data_frame(datetime=now(),
                nome=input$nome,
                email=input$email,
                genero=input$genero,
-               fale=input$fale)
+               q1a=input$q1a,
+               q1a1=input$q1a1,
+               q1a2=input$q1a2,
+               q1a3=input$q1a3,
+               q1b=input$q1b,
+               q1c=input$q1c,
+               q1d=input$q1d,
+               q2a=input$q2a,
+               q2a1=input$q2a1,
+               q2a2=input$q2a2,
+               q3a=input$q3a,
+               q3b=input$q3b,
+               q3c=input$q3c,
+               q4a=input$q4a)
     return(d)
   })
     
@@ -44,13 +67,13 @@ shinyServer(function(input, output, session) {
       }
       
       if(aux > 0 & val & res) {
-        showshinyalert(session,'salvou', 'Salvou!!', 'success')
+        showshinyalert(session,'salvou', 'Salvou!! :D', 'success')
       } else if (aux == 0) {
         showshinyalert(session, 'salvou', 'Clique em salvar!', 'warning')
       } else if (!val) {
-        showshinyalert(session,'salvou', 'Existem campos preenchidos de forma errada :(', 'danger')
+        showshinyalert(session,'salvou', 'Existem campos obrigatórios que não foram preenchidos corretamente :(', 'danger')
       } else if(!res) {
-        showshinyalert(session,'salvou', 'Ocorreu um erro na base de dados :(', 'danger')
+        showshinyalert(session,'salvou', 'Ocorreu um erro na base de dados... :(', 'danger')
       }
     })
   })
