@@ -5,7 +5,7 @@ library(stringr)
 library(lubridate)
 library(RMySQL)
 
-shinyServer(function(input, output, session) {
+shinyServer(function(input, output, session) {  
   
   valida <- reactive({
     val <- str_length(input$email) > 0 & str_detect(input$email, fixed('@'))
