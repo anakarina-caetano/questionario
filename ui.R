@@ -66,7 +66,7 @@ fluidPage(
     radioButtons('q2a', 'a) Você trabalha?', c('Sim'='sim', 'Não'='nao'), selected=NA),
     
     conditionalPanel("input.q2a=='sim'",
-                     textInput('area', 'a.1) Em que área?'),
+                     textInput('q2a1', 'a.1) Em que área?'),
                      tags$br(),
                      tags$span('a.2) O que você faz no seu trabalho? Descreva de forma sucinta'), 
                      tags$br(), tags$br(),
