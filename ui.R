@@ -20,9 +20,7 @@ fluidPage(
   h4('Curso R - do casual ao avançado'),
   tags$hr(),
   fluidRow(column(4, textInput('nome', 'Nome completo', value='')),
-           column(4, textInput('email', 'Email'), value=''),
-           column(4, radioButtons('genero', 'Gênero', choices=c('Feminino', 'Masculino', 'Outro'), 
-                                  inline=TRUE, selected=NA))),
+           column(4, textInput('email', 'Email'), value='')),
   
   h4('Parte 01 - Experiência prévia'),
   wellPanel(fluidRow(

@@ -32,7 +32,6 @@ shinyServer(function(input, output, session) {
     d <- data_frame(datetime=as.character(now()),
                nome=input$nome,
                email=input$email,
-               genero=ifelse(is.null(input$genero), '', input$genero),
                q1a=input$q1a,
                q1a1=ifelse(is.null(input$q1a1), '', input$q1a1),
                q1a2=ifelse(is.null(input$q1a2), '', paste0(input$q1a2, collapse='@')),
