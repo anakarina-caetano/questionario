@@ -1,0 +1,208 @@
+---
+title: "Resultados Questionário"
+author: "Julio Trecenti"
+date: "12/28/2014"
+output: html_document
+---
+
+
+```{r echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+host <- ''
+username <- ''
+password <- ''
+dbname <- ''
+
+library(shiny)
+library(shinysky)
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(RMySQL)
+library(ggplot2)
+library(tidyr)
+
+con <- dbConnect("MySQL", host=host, dbname=dbname, username=username, password=password)
+resultados <- dbReadTable(con, 'questionario')
+aux <- dbDisconnect(con)
+```
+
+```{r, echo=FALSE}
+d <- resultados %>%
+  mutate(nome=zoo::na.locf(nome)) %>%
+  select(-genero) %>%
+  group_by(nome) %>%
+  mutate(q4a=paste(q4a[1], paste(datetime[-1], collapse='\n'), sep='\n')) %>%
+  ungroup %>%
+  filter(!is.na(email)) %>%
+  arrange(desc(datetime)) %>%  
+  distinct(nome) %>%
+  filter(!str_detect(nome, ignore.case('teste')), 
+         email != '@',
+         datetime > '2014-12-22 12:00:00')
+```
+
+## Número de respondentes
+
+```{r}
+nrow(d)
+```
+
+## Parte 01 - Experiência prévia
+
+### 1a) Você já conhece o R?
+
+```{r}
+d %>%
+  ggplot(aes(x=q1a)) +
+  geom_bar()
+```
+
+#### 1a.1) Você se considera em que nível de R?
+
+```{r}
+d %>%
+  filter(q1a=='sim') %>%
+  ggplot(aes(x=q1a1)) +
+  geom_bar()
+```
+
+#### 1a.2) Para quê / onde vc usa o R atualmente?
+
+```{r}
+d %>%
+  filter(q1a=='sim') %>%
+  separate(q1a2, letters[1:5], extra='drop', sep='@') %>%
+  gather(aux, resp, one_of(letters[1:5]), na.rm=T) %>%
+  ggplot(aes(x=resp)) +
+  geom_bar()
+
+d %>%
+  filter(q1a=='sim') %>%
+  mutate(q1a2=str_replace_all(q1a2, '@', '\n')) %>%
+  ggplot(aes(x=q1a2)) +
+  geom_bar()
+```
+
+
+#### 1a.3) Você sabe usar as funcoes vetorizadas do R, como apply, sapply, lapply?
+
+```{r}
+d %>%
+  filter(q1a=='sim') %>%
+  ggplot(aes(x=q1a3)) +
+  geom_bar()
+```
+
+
+### 1b) Quais dessas linguagens de programação você saberia utilizar?
+
+```{r}
+# considera contagens desconsiderando varias alternativas (nao soma 100%)
+d %>%
+  filter(q1a=='sim') %>%
+  separate(q1b, letters[1:5], extra='drop', sep='@') %>%
+  gather(aux, resp, one_of(letters[1:5]), na.rm=T) %>%
+  ggplot(aes(x=resp)) +
+  geom_bar()
+
+# considera todas as combinacoes...
+d %>%
+  mutate(q1b=str_replace_all(q1b, '@', '\n')) %>%
+  ggplot(aes(x=q1b)) +
+  geom_bar()
+```
+
+
+### 1c) Possui conhecimentos prévios em estatística?
+
+```{r}
+d %>%
+  ggplot(aes(x=q1c)) +
+  geom_bar()
+```
+
+
+### 1d) Quais desses softwares você saberia utilizar?
+
+```{r}
+# considera contagens desconsiderando varias alternativas (nao soma 100%)
+d %>%
+  separate(q1d, letters[1:5], extra='drop', sep='@') %>%
+  gather(aux, resp, one_of(letters[1:5]), na.rm=T) %>%
+  ggplot(aes(x=resp)) +
+  geom_bar()
+
+# considera todas as combinacoes...
+d %>%
+  mutate(q1d=str_replace_all(q1d, '@', '\n')) %>%
+  ggplot(aes(x=q1b)) +
+  geom_bar()
+```
+
+## Parte 02 - Trabalho
+
+### 2a) Você trabalha?
+
+```{r}
+d %>%
+  ggplot(aes(x=q2a)) +
+  geom_bar()
+```
+
+## Parte 03 - Em relação ao curso
+
+### 3a) Quais são seus objetivos com esse curso?
+
+```{r}
+# considera contagens desconsiderando varias alternativas (nao soma 100%)
+d %>%
+  separate(q3a, letters[1:10], extra='drop', sep='@') %>%
+  gather(aux, resp, one_of(letters[1:10]), na.rm=T) %>%
+  mutate(resp=paste0(str_sub(resp, 1, 30), '...')) %>%
+  ggplot(aes(x=resp)) +
+  geom_bar() +
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+
+# considera todas as combinacoes...
+d %>%
+  separate(q3a, letters[1:10], extra='drop', sep='@') %>%
+  gather(aux, resp, one_of(letters[1:10]), na.rm=F) %>%
+  mutate(resp=ifelse(is.na(resp), resp, paste0(str_sub(resp, 1, 30), '...'))) %>%
+  spread(aux, resp) %>%
+  unite(q3a, one_of(letters[1:10]), sep='\n') %>%
+  mutate(q3a=gsub('\nNA', '', q3a)) %>%
+  ggplot(aes(x=q3a)) +
+  geom_bar() +
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+### 3b) Quantas horas por semana, em média, você pretende dedicar ao curso fora das aulas?
+
+```{r}
+d %>%
+  ggplot(aes(x=as.factor(q3b))) +
+  geom_bar()
+
+d %>%
+  mutate(tempo=cut(q3b, c(0, 2, 4, 10))) %>%
+  ggplot(aes(x=tempo)) +
+  geom_bar()
+```
+
+### 3c) Você pretende levar notebook nas aulas (sem contar os laboratórios)?
+
+```{r}
+d %>%
+  ggplot(aes(x=q3c)) +
+  geom_bar()
+```
+
+## Parte 04 - Dúvidas ou sugestões sobre o curso ou sobre alguma outra coisa
+
+```{r results='hold'}
+aux <- d %>% with(q4a) %>% print
+```
+
+
+
+
